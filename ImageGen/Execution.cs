@@ -71,6 +71,16 @@ namespace ImageGen
                         Color color = ColorTranslator.FromHtml("#" + hexColor);
                         colorCodes.Add(colorCode, color);
                         break;
+                    case 'F':
+                        // fill entire image
+                        // example:
+                        // FB
+                        // fill image with blue color
+                        i++;
+                        colorCode = code[i];
+                        
+                        g.Clear(colorCodes[colorCode]);
+                        break;
                     case 'R':
                         // filled rectangle
                         // example:
