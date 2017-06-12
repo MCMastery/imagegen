@@ -3,7 +3,7 @@ Image generation code golf language.
 
 ## usage
 
-Download ImageGen.exe from ImageGen/bin/debug, or compile it yourself using VS
+Download ImageGen.exe from ImageGen/bin/debug, or compile it yourself using VS (make sure ColorCodes.txt is marked as an external resource)
 
 ## examples
 
