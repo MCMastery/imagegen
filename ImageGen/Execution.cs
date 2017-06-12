@@ -62,6 +62,8 @@ namespace ImageGen
                     //#acdcdcd
                     // color code: a
                     // hex color: cdcdcd
+                    case ' ':
+                        break;
                     case '#':
                         i++;
                         char colorCode = code[i];
@@ -99,10 +101,16 @@ namespace ImageGen
                             if (int.TryParse(c.ToString(), out int o) || c == ',')
                                 continue;
                             else
+                            {
+                                i--;
                                 break;
+                            }
                         }
 
-                        string sub = code.Substring(start, i - start);
+                        int end = (i + 1) - start;
+                        if (i + 1 >= code.Length)
+                            end = i - start;
+                        string sub = code.Substring(start, end);
                         // to get "50, 50, 100, 100"
                         string[] split = sub.Split(',');
                         if (split.Length != 4)
