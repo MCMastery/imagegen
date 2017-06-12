@@ -58,13 +58,26 @@ namespace ImageGen
                 char ch = code[i];
                 switch (ch)
                 {
+                    // custom 6-digit hex color code
+                    //#acdcdcd
+                    // color code: a
+                    // hex color: cdcdcd
+                    case '#':
+                        i++;
+                        char colorCode = code[i];
+                        i++;
+                        string hexColor = code.Substring(i, 6);
+                        i += 6;
+                        Color color = ColorTranslator.FromHtml("#" + hexColor);
+                        colorCodes.Add(colorCode, color);
+                        break;
                     case 'R':
                         // filled rectangle
                         // example:
                         // RG50,50,100,100
                         // green rectangle at (50,50) with dimensions 100x100
                         i++;
-                        char color = code[i];
+                        colorCode = code[i];
                         // add one to get to coords
                         i++;
                         int start = i;
@@ -95,7 +108,7 @@ namespace ImageGen
                             return;
                         }
 
-                        Brush brush = new SolidBrush(colorCodes[color]);
+                        Brush brush = new SolidBrush(colorCodes[colorCode]);
                         g.FillRectangle(brush, x, y, w, h);
                         break;
                     default:
