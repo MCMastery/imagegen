@@ -67,7 +67,7 @@ namespace ImageGen
                         char colorCode = code[i];
                         i++;
                         string hexColor = code.Substring(i, 6);
-                        i += 6;
+                        i += 5;
                         Color color = ColorTranslator.FromHtml("#" + hexColor);
                         colorCodes.Add(colorCode, color);
                         break;
