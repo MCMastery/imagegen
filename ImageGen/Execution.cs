@@ -63,7 +63,8 @@ namespace ImageGen
                         // example:
                         // RG50,50,100,100
                         // green rectangle at (50,50) with dimensions 100x100
-                        char color = code[i++];
+                        i++;
+                        char color = code[i];
                         // add one to get to coords
                         i++;
                         int start = i;
@@ -93,7 +94,6 @@ namespace ImageGen
                             Console.WriteLine("[FATAL] Invalid rectangle function usage! Example: RG50,50,100,100");
                             return;
                         }
-
 
                         Brush brush = new SolidBrush(colorCodes[color]);
                         g.FillRectangle(brush, x, y, w, h);
