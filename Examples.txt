@@ -1,0 +1,2 @@
+200x200 image with 100x100 green rectangle at (50,50)
+200x200 RG50,50,100,100
