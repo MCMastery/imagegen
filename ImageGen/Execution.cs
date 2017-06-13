@@ -58,12 +58,13 @@ namespace ImageGen
                 char ch = code[i];
                 switch (ch)
                 {
+                    // ignore spaces
+                    case ' ':
+                        break;
                     // custom 6-digit hex color code
                     //#acdcdcd
                     // color code: a
                     // hex color: cdcdcd
-                    case ' ':
-                        break;
                     case '#':
                         i++;
                         char colorCode = code[i];
@@ -71,6 +72,20 @@ namespace ImageGen
                         string hexColor = code.Substring(i, 6);
                         i += 5;
                         Color color = ColorTranslator.FromHtml("#" + hexColor);
+                        colorCodes.Add(colorCode, color);
+                        break;
+                    // custom 3-digit hex color code
+                    //@af0f
+                    // color code: a
+                    // hex color: #FF00FF
+                    case '@':
+                        i++;
+                        colorCode = code[i];
+                        i++;
+                        hexColor = code.Substring(i, 3);
+                        hexColor = hexColor[0].ToString() + hexColor[0] + hexColor[1].ToString() + hexColor[1] + hexColor[2].ToString() + hexColor[2];
+                        i += 2;
+                        color = ColorTranslator.FromHtml("#" + hexColor);
                         colorCodes.Add(colorCode, color);
                         break;
                     case 'F':
@@ -110,24 +125,101 @@ namespace ImageGen
                         int end = (i + 1) - start;
                         if (i + 1 >= code.Length)
                             end = i - start;
-                        string sub = code.Substring(start, end);
-                        // to get "50, 50, 100, 100"
-                        string[] split = sub.Split(',');
-                        if (split.Length != 4)
-                        {
-                            Console.WriteLine("[FATAL] Invalid rectangle function usage! Example: RG50,50,100,100");
-                            return;
-                        }
 
+                        string sub = code.Substring(start, end);
+                        string[] split = sub.Split(',');
                         int x, y, w, h;
-                        if (!int.TryParse(split[0], out x) || !int.TryParse(split[1], out y) || !int.TryParse(split[2], out w) || !int.TryParse(split[3], out h))
+                        // x,y,w,h
+                        if (split.Length == 4)
                         {
-                            Console.WriteLine("[FATAL] Invalid rectangle function usage! Example: RG50,50,100,100");
+                            if (!int.TryParse(split[0], out x) || !int.TryParse(split[1], out y) || !int.TryParse(split[2], out w) || !int.TryParse(split[3], out h))
+                            {
+                                Console.WriteLine("[FATAL] Invalid rectangle function usage!");
+                                return;
+                            }
+                        }
+                        // x,y,size (square)
+                        else if (split.Length == 3)
+                        {
+                            if (!int.TryParse(split[0], out x) || !int.TryParse(split[1], out y) || !int.TryParse(split[2], out w))
+                            {
+                                Console.WriteLine("[FATAL] Invalid rectangle function usage!");
+                                return;
+                            }
+                            h = w;
+                        }
+                        // w,h
+                        else if (split.Length == 2)
+                        {
+                            if (!int.TryParse(split[0], out w) || !int.TryParse(split[1], out h))
+                            {
+                                Console.WriteLine("[FATAL] Invalid rectangle function usage!");
+                                return;
+                            }
+                            x = 0;
+                            y = 0;
+                        }
+                        // size
+                        else if (split.Length == 1)
+                        {
+                            if (!int.TryParse(split[0], out w))
+                            {
+                                Console.WriteLine("[FATAL] Invalid rectangle function usage!");
+                                return;
+                            }
+                            h = w;
+                            x = 0;
+                            y = 0;
+                        }
+                        else
+                        {
+                            Console.WriteLine("[FATAL] Invalid rectangle function usage!");
                             return;
                         }
 
                         Brush brush = new SolidBrush(colorCodes[colorCode]);
                         g.FillRectangle(brush, x, y, w, h);
+                        break;
+                    // grid of lines
+                    // G04
+                    case 'G':
+                        i++;
+                        colorCode = code[i];
+
+                        i++;
+                        start = i;
+                        // loop through characters after G<ColorChar> until reaches character other than integer
+                        for (; i < code.Length; i++)
+                        {
+                            char c = code[i];
+                            // if it is a "," or integer, continue
+                            if (int.TryParse(c.ToString(), out int o) || c == ',')
+                                continue;
+                            else
+                            {
+                                i--;
+                                break;
+                            }
+                        }
+
+                        end = (i + 1) - start;
+                        if (i + 1 >= code.Length)
+                            end = i - start;
+
+                        sub = code.Substring(start, end);
+                        int spacing;
+                        if (!int.TryParse(sub, out spacing))
+                        {
+                            Console.WriteLine("[FATAL] Invalid grid function usage!");
+                            return;
+                        }
+
+                        Pen pen = new Pen(new SolidBrush(colorCodes[colorCode]));
+                        for (x = 0; x < bitmap.Width; x += spacing)
+                            g.DrawLine(pen, x, 0, x, bitmap.Height);
+
+                        for (y = 0; y < bitmap.Height; y += spacing)
+                            g.DrawLine(pen, 0, y, bitmap.Width, y);
                         break;
                     default:
                         Console.WriteLine("[WARN] Ignoring unknown character " + ch + " at position " + i + ".");
@@ -140,6 +232,7 @@ namespace ImageGen
             bitmap.Save("out.png", System.Drawing.Imaging.ImageFormat.Png);
             bitmap.Dispose();
         }
+
 
         private static Bitmap GenerateBitmap(string code)
         {
